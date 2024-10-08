@@ -4,17 +4,22 @@ import java.awt.*;
 
 import javax.swing.*;
 
-import com.Proyecto_1.Backend.ActionListeners.ActionListenerSalir;
+import com.Proyecto_1.Backend.ActionListeners.*;
+import com.Proyecto_1.Frontend.JDialog.*;
 
 public class FramePrincipal extends JFrame {
 
     private JScrollPane scp1;
     private JTextArea txa;
+    private JButton btn1, btn2;
 
     private final Dimension DIM = Toolkit.getDefaultToolkit().getScreenSize();
     private final int SIZE = 800;
     private final int GAP = 50;
     private final int SIZE_PANEL = SIZE - GAP * 2;
+
+    private DialogSeleccionArchivo dialogSeleccionArchivo;
+    private DialogBorrarTexto dialogBorrarTexto;
 
     public FramePrincipal() {
 
@@ -36,11 +41,14 @@ public class FramePrincipal extends JFrame {
         jMenuBar.add(jM1);
         jMenuBar.add(jM2);
 
-        JMenuItem jMI1 = new JMenuItem("Salir");
+        JMenuItem jMI1 = new JMenuItem("Cargar Archivo");
+        JMenuItem jMI2 = new JMenuItem("Salir");
 
         jM1.add(jMI1);
+        jM1.add(jMI2);
 
-        jMI1.addActionListener(new ActionListenerSalir());
+        jMI1.addActionListener(new ActionListenerArchivo(this));
+        jMI2.addActionListener(new ActionListenerSalir());
 
         setJMenuBar(jMenuBar);
 
@@ -51,6 +59,9 @@ public class FramePrincipal extends JFrame {
         scp1.setPreferredSize(new Dimension(SIZE_PANEL, (int) (SIZE_PANEL * 1.3)));
         scp1.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
+        btn1 = new JButton("Analizar Texto");
+        btn2 = new JButton("Generar HTML");
+
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
 
@@ -58,18 +69,64 @@ public class FramePrincipal extends JFrame {
                 layout.createSequentialGroup()
                         .addContainerGap(GAP, Short.MAX_VALUE)
                         .addComponent(scp1)
+                        .addGap(GAP / 3)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                                .addComponent(btn1)
+                                .addComponent(btn2))
                         .addContainerGap(GAP, Short.MAX_VALUE));
 
         layout.setHorizontalGroup(
                 layout.createSequentialGroup()
                         .addContainerGap(GAP, Short.MAX_VALUE)
-                        .addComponent(scp1)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                                .addComponent(scp1)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(btn1)
+                                        .addGap(GAP)
+                                        .addComponent(btn2)))
+
                         .addContainerGap(GAP, Short.MAX_VALUE));
 
     }
 
     public int getSIZE_PANEL() {
         return SIZE_PANEL;
+    }
+
+    public void preguntarArchivo() {
+        cerrarDialogs();
+        dialogSeleccionArchivo = new DialogSeleccionArchivo(this);
+        dialogSeleccionArchivo.setVisible(true);
+    }
+
+    public void preguntarBorrar(String texto) {
+        cerrarDialogs();
+        dialogBorrarTexto = new DialogBorrarTexto(this, texto);
+        dialogBorrarTexto.setVisible(true);
+    }
+
+    public void cerrarDialogs() {
+        if (dialogSeleccionArchivo != null) {
+            dialogSeleccionArchivo.dispose();
+        }
+        if (dialogBorrarTexto != null) {
+            dialogBorrarTexto.dispose();
+        }
+    }
+
+    public void borrarTextArea(String texto, String opcion) {
+        String textoTotal = null;
+        switch (opcion) {
+            case "Si":
+                textoTotal = texto;
+                break;
+            case "No":
+                textoTotal = txa.getText() + texto;
+                break;
+        }
+
+        txa.setText(textoTotal);
+        cerrarDialogs();
     }
 
 }
