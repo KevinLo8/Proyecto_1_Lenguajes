@@ -4,18 +4,16 @@ import java.util.ArrayList;
 
 import javax.swing.*;
 
-import com.Proyecto_1.Backend.Analizador.Analizador;
-
 public class Automata {
 
     private ArrayList<String> parrafos;
     private ArrayList<String> tipo;
-    private Analizador analizador;
+    private AutomataAnalizador analizador;
 
     public Automata() {
         parrafos = new ArrayList<>();
         tipo = new ArrayList<>();
-        analizador = new Analizador();
+        analizador = new AutomataAnalizador();
     }
 
     public void analizarTexto(JTextArea txa) {
@@ -41,9 +39,9 @@ public class Automata {
                     parrafo = "";
                 }
 
-                parrafo = parrafo + lineas[index];
+                parrafo = parrafo + lineas[index] + "\n";
             } else {
-                parrafo = parrafo + lineas[index];
+                parrafo = parrafo + lineas[index] + "\n";
             }
             index++;
         }
@@ -70,20 +68,7 @@ public class Automata {
 
     private void analizarParrafos() {
         for (int i = 0; i < parrafos.size(); i++) {
-            switch (tipo.get(i)) {
-                case "HTML":
-                    analizador.analizarHTML(parrafos.get(i));
-                    break;
-                case "CSS":
-                    analizador.analizarCSS(parrafos.get(i));
-                    break;
-                case "JS":
-                    analizador.analizarJS(parrafos.get(i));
-                    break;
-                case "ERROR":
-                    analizador.analizarJS(parrafos.get(i));
-                    break;
-            }
+            analizador.analizarParrafo(null, tipo.get(i));
         }
     }
 

@@ -2,168 +2,46 @@ package com.Proyecto_1.Backend.Analizador;
 
 import java.util.ArrayList;
 
-import com.Proyecto_1.Backend.Token.*;
+import com.Proyecto_1.Backend.Token.Token;
 
-public class Analizador {
+public abstract class Analizador {
 
-    private final String[] TOKEN_DE_ESTADO = { ">>[html]", ">>[css]", ">>[js]" };
-    private int numeroLinea;
-    private ArrayList<Token> tokens;
-    private ArrayList<Token> optimizacion;
-    private ArrayList<TokenError> errores;
+    protected ArrayList<Token> tokens;
+    protected int index;
+    protected int columna;
+    protected int numeroLinea;
 
-    public Analizador() {
-        numeroLinea = 1;
-        tokens = new ArrayList<>();
-        optimizacion = new ArrayList<>();
-        errores = new ArrayList<>();
-    }
-
-    public ArrayList<Token> getTokens() {
-        return tokens;
-    }
-
-    public ArrayList<Token> getOptimizacion() {
-        return optimizacion;
-    }
-
-    public ArrayList<TokenError> getErrores() {
-        return errores;
-    }
-
-    public void analizarHTML(String parrafo) {
-        String[] lineas = parrafo.split("\\n");
-
-        crearTokenEstado(parrafo);
-        for (int i = 1; i < lineas.length; i++) {
-            AnalizadorHTML analizadorHTML = new AnalizadorHTML();
-
-            ArrayList<Token> tokensLinea = analizadorHTML.separarTokensLinea(lineas[i], numeroLinea);
-
-            if (contieneComentario(tokensLinea)) {
-                optimizacion.addAll(tokensLinea);
-            } else {
-                for (int j = 0; j < tokensLinea.size(); j++) {
-                    Token token = tokensLinea.get(j);
-                    if (token.getTipo() == "Error") {
-                        TokenError tokenError = tokenATokenError(token);
-                        errores.add(tokenError);
-                    } else {
-                        tokens.add(token);
-                    }
-                }    
-            }
-
-            numeroLinea++;
-        }
-    }
-
-    public void analizarCSS(String parrafo) {
-        // String[] lineas = parrafo.split("\\n");
-    }
-
-    public void analizarJS(String parrafo) {
-        // String[] lineas = parrafo.split("\\n");
-    }
-
-    public boolean esTokenEstado(String palabra) {
-        for (int i = 0; i < 3; i++) {
-            if (palabra == TOKEN_DE_ESTADO[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void crearTokenEstado(String linea) {
-        String palabra = extraerPalabraEstado(linea);
-        int index = 0;
-        int columna = 0;
+    protected void agregarToken(String[] traduccion, String tipo, String lenguaje) {
         Token token = new Token();
-
-        token.setToken(palabra);
-        token.setExpresionRegular(palabra);
-        token.setFila(numeroLinea);
-        token.setColumna(1);
-        token.setTipo("Estado");
-
-        tokens.add(token);
-
-        while (index < linea.length()) {
-            if (linea.charAt(index) == ' ') {
-                index++;
-            } else {
-                index += crearTokenError(linea, columna, index, "HTML");
-            }
-        }
-
-        numeroLinea++;
-    }
-
-    private int crearTokenError(String linea, int columna, int index, String lenguaje) {
-        String palabra = extraerPalabraErronea(linea, index);
-
-        TokenError token = new TokenError();
-        token.setToken(palabra);
-        token.setLenguajeEncontrado(lenguaje);
+        token.setToken(traduccion[0]);
+        token.setExpresionRegular(traduccion[1]);
+        token.setLenguaje(lenguaje);
+        token.setTipo(tipo);
         token.setFila(numeroLinea);
         token.setColumna(columna);
 
-        errores.add(token);
+        tokens.add(token);
 
-        return palabra.length();
+        columna++;
     }
 
-    public String extraerPalabraEstado(String linea) {
-
-        linea = linea.trim();
-
+    protected String extraerPalabra(String parte) {
         String palabra = "";
-        int index = 0;
         char caracter;
 
         do {
             index++;
-            caracter = linea.charAt(index);
+            caracter = parte.charAt(index);
             palabra = palabra + caracter;
-        } while (caracter == ' ');
+        } while (esFinalPalabra(parte.charAt(index), parte.charAt(index + 1)));
 
         return palabra;
     }
 
-    private String extraerPalabraErronea(String linea, int index) {
-        String palabra = "";
-        char caracter;
-        try {
-            do {
-                index++;
-                caracter = linea.charAt(index);
-                palabra = palabra + caracter;
-            } while (linea.charAt(index) != '_');
-        } catch (IndexOutOfBoundsException e) {
-        }
-        return palabra;
+    protected void agregarError(String palabra, String lenguaje) {
+        String[] error = { palabra, palabra };
+        agregarToken(error, "Error", lenguaje);
     }
 
-    private boolean contieneComentario(ArrayList<Token> tokensLinea){
-
-        for (int i = 0; i < tokensLinea.size(); i++) {
-            Token token = tokensLinea.get(i);
-            if (token.getTipo().equals("Comentario")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private TokenError tokenATokenError(Token token) {
-        TokenError tokenError = new TokenError();
-
-        tokenError.setToken(token.getToken());
-        tokenError.setLenguajeEncontrado(token.getLenguaje());
-        tokenError.setFila(token.getFila());
-        tokenError.setColumna(token.getColumna());
-
-        return tokenError;
-    }
+    protected abstract boolean esFinalPalabra(char car, char carSig);
 }
