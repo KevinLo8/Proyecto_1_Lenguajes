@@ -4,12 +4,8 @@ import java.util.ArrayList;
 
 import com.Proyecto_1.Backend.Token.*;
 
-public class AnalizadorHTML {
-    private ArrayList<Token> tokens;
-    private int index;
-    private int columna;
-    private int numeroLinea;
-
+public class AnalizadorHTML extends Analizador {
+    
     public ArrayList<Token> separarTokensLinea(String linea, int numeroLinea) {
         this.numeroLinea = numeroLinea;
         tokens = new ArrayList<>();
@@ -22,16 +18,16 @@ public class AnalizadorHTML {
             parte = partes.get(i);
             if (parte.charAt(0) == '<') {
                 if (parte.charAt(parte.length() - 2) == '/') {
-                    analizarLineaCierre(parte, numeroLinea, columna);
+                    analizarLineaCierre(parte);
                 } else {
-                    analizarLineaApertura(parte, numeroLinea, columna);
+                    analizarLineaApertura(parte);
                 }
             } else if (parte.charAt(0) == '/' && parte.charAt(1) == '/') {
                 String[] comentario = { parte, parte };
-                agregarToken(comentario, "Comentario");
+                agregarToken(comentario, "Comentario", "HTML");
             } else {
                 String[] texto = { parte, parte };
-                agregarToken(texto, "Texto");
+                agregarToken(texto, "Texto", "HTML");
             }
         }
 
@@ -45,7 +41,9 @@ public class AnalizadorHTML {
         index = 0;
 
         do {
-            if (linea.charAt(index) == '<') {
+            if (linea.charAt(index) == ' ') {
+                index++;
+            } else if (linea.charAt(index) == '<') {
                 parte = extraerComando(linea);
                 partes.add(parte);
             } else if (linea.charAt(index) == '/' && linea.charAt(index + 1) == '/') {
@@ -103,7 +101,7 @@ public class AnalizadorHTML {
         return palabra;
     }
 
-    private void analizarLineaApertura(String parte, int numeroLinea, int columna) {
+    private void analizarLineaApertura(String parte) {
         TokenHTML tokenHTML = new TokenHTML();
         String palabra = "";
 
@@ -112,7 +110,7 @@ public class AnalizadorHTML {
         palabra = palabra + palabra.charAt(index);
         String[] apertura = { palabra, palabra };
 
-        agregarToken(apertura, "Etiqueta de Apertura");
+        agregarToken(apertura, "Etiqueta de Apertura", "HTML");
 
         do {
             palabra = extraerPalabra(parte);
@@ -127,20 +125,19 @@ public class AnalizadorHTML {
                     tipo = "Etiqueta";
                 }
                 String[] traduccion = tokenHTML.retornarTraduccion(palabra);
-                agregarToken(traduccion, tipo);
+                agregarToken(traduccion, tipo, "HTML");
             } else {
-                String[] error = { palabra, palabra };
-                agregarToken(error, "Error");
+                agregarError(palabra, "HTML");
             }
         } while (index > parte.length() - 1);
 
         palabra = palabra + palabra.charAt(index);
         String[] cierre = { palabra, palabra };
 
-        agregarToken(cierre, "Etiqueta de Cierre");
+        agregarToken(cierre, "Etiqueta de Cierre", "HTML");
     }
 
-    private void analizarLineaCierre(String parte, int numeroLinea, int columna) {
+    private void analizarLineaCierre(String parte) {
         TokenHTML tokenHTML = new TokenHTML();
         String palabra = "";
         boolean tieneEtiqueta = false;
@@ -150,25 +147,23 @@ public class AnalizadorHTML {
         palabra = palabra + palabra.charAt(index);
         String[] apertura = { palabra, palabra };
 
-        agregarToken(apertura, "Etiqueta de Apertura");
+        agregarToken(apertura, "Etiqueta de Apertura", "HTML");
 
         do {
             palabra = extraerPalabra(parte);
 
             if (tokenHTML.esEtiqueta(palabra)) {
                 String[] traduccion = tokenHTML.retornarTraduccion(palabra);
-                agregarToken(traduccion, "Etiqueta");
+                agregarToken(traduccion, "Etiqueta", "HTML");
                 tieneEtiqueta = true;
             } else {
-                String[] error = { palabra, palabra };
-                agregarToken(error, "Error");
+                agregarError(palabra, "HTML");
             }
         } while (!tieneEtiqueta && index < parte.length() - 2);
 
         do {
             palabra = extraerPalabra(parte);
-            String[] error = { palabra, palabra };
-            agregarToken(error, "Error");
+            agregarError(palabra, "HTML");
         } while (index < parte.length() - 2);
 
         for (int i = 0; i < 2; i++) {
@@ -177,37 +172,11 @@ public class AnalizadorHTML {
         }
         String[] cierre = { palabra, palabra };
 
-        agregarToken(cierre, "Etiqueta de Cierre");
+        agregarToken(cierre, "Etiqueta de Cierre", "HTML");
     }
 
-    private void agregarToken(String[] traduccion, String tipo) {
-        Token token = new Token();
-        token.setToken(traduccion[0]);
-        token.setExpresionRegular(traduccion[1]);
-        token.setLenguaje("HTML");
-        token.setTipo(tipo);
-        token.setFila(numeroLinea);
-        token.setColumna(columna);
-
-        tokens.add(token);
-
-        columna++;
-    }
-
-    private String extraerPalabra(String parte) {
-        String palabra = "";
-        char caracter;
-
-        do {
-            index++;
-            caracter = parte.charAt(index);
-            palabra = palabra + caracter;
-        } while (esFinalPalabra(parte.charAt(index + 1)));
-
-        return palabra;
-    }
-
-    private boolean esFinalPalabra(char car) {
-        return car == ' ' || car == '=' || car == '/' || car == '>';
+    @Override
+    protected boolean esFinalPalabra(char car, char carSig) {
+        return carSig == ' ' || carSig == '=' || carSig == '/' || carSig == '>';
     }
 }
