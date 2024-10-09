@@ -5,9 +5,12 @@ import java.awt.*;
 import javax.swing.*;
 
 import com.Proyecto_1.Backend.ActionListeners.*;
+import com.Proyecto_1.Backend.Automata.*;
 import com.Proyecto_1.Frontend.JDialog.*;
 
 public class FramePrincipal extends JFrame {
+
+    private Automata automata;
 
     private JScrollPane scp1;
     private JTextArea txa;
@@ -127,6 +130,11 @@ public class FramePrincipal extends JFrame {
 
         txa.setText(textoTotal);
         cerrarDialogs();
+    }
+
+    public void analizarTexto() {
+        automata = new Automata();
+        automata.analizarTexto(txa);
     }
 
 }
