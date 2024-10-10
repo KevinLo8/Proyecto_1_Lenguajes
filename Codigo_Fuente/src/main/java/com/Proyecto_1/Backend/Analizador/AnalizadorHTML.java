@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.Proyecto_1.Backend.Token.*;
 
 public class AnalizadorHTML extends Analizador {
-    
+
     public ArrayList<Token> separarTokensLinea(String linea, int numeroLinea) {
         this.numeroLinea = numeroLinea;
         tokens = new ArrayList<>();
@@ -38,22 +38,22 @@ public class AnalizadorHTML extends Analizador {
         ArrayList<String> partes = new ArrayList<>();
 
         String parte = null;
-        index = 0;
+        index = -1;
 
         do {
-            if (linea.charAt(index) == ' ') {
+            if (linea.charAt(index + 1) == ' ') {
                 index++;
-            } else if (linea.charAt(index) == '<') {
+            } else if (linea.charAt(index + 1) == '<') {
                 parte = extraerComando(linea);
                 partes.add(parte);
-            } else if (linea.charAt(index) == '/' && linea.charAt(index + 1) == '/') {
+            } else if (linea.charAt(index + 1) == '/' && linea.charAt(index + 2) == '/') {
                 parte = extraerComentario(linea);
                 partes.add(parte);
             } else {
                 parte = extraerTexto(linea);
                 partes.add(parte);
             }
-        } while (index < linea.length());
+        } while (index < linea.length() - 1);
 
         return partes;
     }
@@ -66,21 +66,7 @@ public class AnalizadorHTML extends Analizador {
                 index++;
                 caracter = linea.charAt(index);
                 palabra = palabra + caracter;
-            } while (linea.charAt(index) == '>');
-        } catch (IndexOutOfBoundsException e) {
-        }
-        return palabra;
-    }
-
-    private String extraerComentario(String linea) {
-        String palabra = "";
-        char caracter;
-        try {
-            do {
-                index++;
-                caracter = linea.charAt(index);
-                palabra = palabra + caracter;
-            } while (true);
+            } while (linea.charAt(index) != '>');
         } catch (IndexOutOfBoundsException e) {
         }
         return palabra;
@@ -107,12 +93,17 @@ public class AnalizadorHTML extends Analizador {
 
         index = 0;
 
-        palabra = palabra + palabra.charAt(index);
+        palabra = palabra + parte.charAt(index);
         String[] apertura = { palabra, palabra };
 
         agregarToken(apertura, "Etiqueta de Apertura", "HTML");
 
         do {
+
+            while (parte.charAt(index + 1) == ' ') {
+                index++;
+            }
+
             palabra = extraerPalabra(parte);
 
             if (tokenHTML.pertenece(palabra)) {
@@ -129,9 +120,10 @@ public class AnalizadorHTML extends Analizador {
             } else {
                 agregarError(palabra, "HTML");
             }
-        } while (index > parte.length() - 1);
+        } while (index < parte.length() - 2);
 
-        palabra = palabra + palabra.charAt(index);
+        index++;
+        palabra = "" + parte.charAt(index);
         String[] cierre = { palabra, palabra };
 
         agregarToken(cierre, "Etiqueta de Cierre", "HTML");
@@ -144,12 +136,17 @@ public class AnalizadorHTML extends Analizador {
 
         index = 0;
 
-        palabra = palabra + palabra.charAt(index);
+        palabra = palabra + parte.charAt(index);
         String[] apertura = { palabra, palabra };
 
         agregarToken(apertura, "Etiqueta de Apertura", "HTML");
 
         do {
+
+            while (parte.charAt(index + 1) == ' ') {
+                index++;
+            }
+
             palabra = extraerPalabra(parte);
 
             if (tokenHTML.esEtiqueta(palabra)) {
@@ -161,13 +158,14 @@ public class AnalizadorHTML extends Analizador {
             }
         } while (!tieneEtiqueta && index < parte.length() - 2);
 
-        do {
+        while (index < parte.length() - 2 && parte.charAt(index + 1) != '/') {
             palabra = extraerPalabra(parte);
             agregarError(palabra, "HTML");
-        } while (index < parte.length() - 2);
+        }
 
+        palabra = "";
         for (int i = 0; i < 2; i++) {
-            palabra = palabra + palabra.charAt(index);
+            palabra = palabra + parte.charAt(index);
             index++;
         }
         String[] cierre = { palabra, palabra };
@@ -177,6 +175,6 @@ public class AnalizadorHTML extends Analizador {
 
     @Override
     protected boolean esFinalPalabra(char car, char carSig) {
-        return carSig == ' ' || carSig == '=' || carSig == '/' || carSig == '>';
+        return carSig != ' ' && carSig != '=' && carSig != '/' && carSig != '>' && car != '=';
     }
 }

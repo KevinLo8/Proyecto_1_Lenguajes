@@ -27,7 +27,7 @@ public class ActionListenerCargar implements ActionListener {
             ConexionArchivos conexion = new ConexionArchivos();
             String texto = conexion.leerArchivo(txf1.getText());
 
-            frame.preguntarBorrar(texto);
+            frame.borrarTextArea(texto);
         } catch (ArchivoInexistenteException ex) {
             lbl1.setText("Archivo seleccionado no existe.");
         } catch (IOException e1) {
