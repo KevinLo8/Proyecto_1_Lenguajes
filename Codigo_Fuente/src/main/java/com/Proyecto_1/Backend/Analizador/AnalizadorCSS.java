@@ -27,7 +27,7 @@ public class AnalizadorCSS extends Analizador {
         String palabra = "";
         boolean tieneEtiqueta = false;
 
-        index = 0;
+        index = -1;
 
         separarTokensEtiqueta(parte);
 
@@ -49,10 +49,15 @@ public class AnalizadorCSS extends Analizador {
         String palabra = "";
         boolean tieneEtiqueta = false;
 
-        index = 0;
+        index = -1;
 
         do {
-            if (tokenCSS.esNumero(palabra.charAt(index))) {
+
+            while (parte.charAt(index + 1) == ' ') {
+                index++;
+            }
+
+            if (tokenCSS.esNumero(parte.charAt(index + 1))) {
                 palabra = extraerNumero(parte, tokenCSS);
             } else {
                 palabra = extraerPalabra(parte);
@@ -71,7 +76,7 @@ public class AnalizadorCSS extends Analizador {
         String palabra = "";
         boolean tieneEtiqueta = false;
 
-        index = 0;
+        index = -1;
 
         do {
             palabra = extraerPalabra(parte);
@@ -94,7 +99,7 @@ public class AnalizadorCSS extends Analizador {
             index++;
             caracter = parte.charAt(index);
             etiqueta = etiqueta + caracter;
-        } while (parte.charAt(index + 1) == '{');
+        } while (parte.charAt(index + 1) != '{');
 
         while (etiqueta.charAt(etiqueta.length() - 1) == ' ') {
             etiqueta = etiqueta.substring(0, etiqueta.length() - 1);
@@ -113,13 +118,19 @@ public class AnalizadorCSS extends Analizador {
     private void extraerTokenEtiqueta(String parte) {
         TokenCSS tokenCSS = new TokenCSS();
         String palabra = "";
-        char caracter;
+        char caracter, car1, car2;
 
         do {
             indexPalabra++;
             caracter = parte.charAt(indexPalabra);
             palabra = palabra + caracter;
-        } while (esFinalPalabra(parte.charAt(indexPalabra), parte.charAt(indexPalabra + 1)));
+            car1 = parte.charAt(indexPalabra);
+            try {
+                car2 = parte.charAt(indexPalabra + 1);
+            } catch (Exception e) {
+                car2 = 10;
+            }
+        } while (esFinalPalabra(car1, car2));
 
         String[] traduccion = { palabra, palabra };
         if (tokenCSS.esNombreDeClase(palabra)) {
@@ -165,7 +176,7 @@ public class AnalizadorCSS extends Analizador {
             index++;
             caracter = parte.charAt(index);
             palabra = palabra + caracter;
-        } while (tokenCSS.esNumero(palabra.charAt(index + 1)));
+        } while (tokenCSS.esNumero(parte.charAt(index + 1)));
 
         return palabra;
     }
@@ -203,8 +214,8 @@ public class AnalizadorCSS extends Analizador {
 
     @Override
     protected boolean esFinalPalabra(char car, char carSig) {
-        return carSig == ' ' || (carSig == ':' && car != ':') || carSig == '.' || carSig == '#' || carSig == ','
-                || carSig == ';' || car == '{' || car == '}' || car == '(' || car == ')' || carSig == '('
-                || carSig == ')';
+        return carSig != ' ' && !(carSig == ':' && car != ':') && carSig != '.' && carSig != '#' && carSig != ','
+                && carSig != ';' && car != '{' && car != '}' && car != '(' && car != ')' && carSig != '('
+                && carSig != ')' && carSig != 10;
     }
 }

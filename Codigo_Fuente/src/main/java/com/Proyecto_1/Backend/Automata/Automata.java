@@ -21,7 +21,7 @@ public class Automata {
         String[] lineas = txa.getText().split("\\n");
         separarParrafos(lineas);
 
-        analizarParrafos();
+        analizarParrafos(txa);
     }
 
     private void separarParrafos(String[] lineas) {
@@ -66,10 +66,12 @@ public class Automata {
         }
     }
 
-    private void analizarParrafos() {
+    private void analizarParrafos(JTextArea txa) {
         for (int i = 0; i < parrafos.size(); i++) {
-            analizador.analizarParrafo(null, tipo.get(i));
+            analizador.analizarParrafo(parrafos.get(i), tipo.get(i));
         }
+
+        analizador.ponerOptimizacion(txa);
     }
 
 }

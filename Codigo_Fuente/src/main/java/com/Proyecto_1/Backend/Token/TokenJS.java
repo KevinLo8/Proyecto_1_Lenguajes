@@ -100,7 +100,12 @@ public class TokenJS {
 
     private Boolean esEnteroODecimal(String palabra) {
         boolean tienePunto = false;
-        for (int i = 0; i < palabra.length(); i++) {
+
+        if (!esNumero(palabra.charAt(0))) {
+            return false;
+        }
+
+        for (int i = 1; i < palabra.length(); i++) {
             if (palabra.charAt(i) == '.') {
                 if (!tienePunto) {
                     tienePunto = true;
@@ -143,6 +148,10 @@ public class TokenJS {
         } else {
             return false;
         }
+    }
+
+    public Boolean esPrincipoCadena(char car) {
+        return car == 39 || car == '"' || car == '`';
     }
 
 }

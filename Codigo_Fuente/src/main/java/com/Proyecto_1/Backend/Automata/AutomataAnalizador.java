@@ -2,6 +2,8 @@ package com.Proyecto_1.Backend.Automata;
 
 import java.util.ArrayList;
 
+import javax.swing.JTextArea;
+
 import com.Proyecto_1.Backend.Analizador.*;
 import com.Proyecto_1.Backend.Token.*;
 
@@ -12,12 +14,14 @@ public class AutomataAnalizador {
     private ArrayList<Token> tokens;
     private ArrayList<Token> optimizacion;
     private ArrayList<TokenError> errores;
+    private String textoOptimizado;
 
     public AutomataAnalizador() {
         numeroLinea = 1;
         tokens = new ArrayList<>();
         optimizacion = new ArrayList<>();
         errores = new ArrayList<>();
+        textoOptimizado = "";
     }
 
     public ArrayList<Token> getTokens() {
@@ -44,7 +48,7 @@ public class AutomataAnalizador {
                     if (lineas[i].charAt(index) == ' ') {
                         index++;
                     } else {
-                        index += crearTokenError(lineas[i], columna, index, "");
+                        index = index + crearTokenError(lineas[i], columna, index, "");
                     }
                 }
         
@@ -63,13 +67,10 @@ public class AutomataAnalizador {
                         case "CSS":
                             AnalizadorCSS analizadorCSS = new AnalizadorCSS();
                             tokensLinea = analizadorCSS.separarTokensLinea(lineas[i], numeroLinea);
-    
                             break;
                         case "JS":
-                            /*
-                             * AnalizadorJS analizadorJS = new AnalizadorJS();
-                             * tokensLinea = analizadorJS.separarTokensLinea(lineas[i], numeroLinea);
-                             */
+                            AnalizadorJS analizadorJS = new AnalizadorJS();
+                            tokensLinea = analizadorJS.separarTokensLinea(lineas[i], numeroLinea);
                             break;
                     }
     
@@ -85,17 +86,20 @@ public class AutomataAnalizador {
                                 tokens.add(token);
                             }
                         }
+                        textoOptimizado = textoOptimizado + lineas[i] + "\n";
                     }
                 }
     
                 numeroLinea++;
             }    
         }
+
+        textoOptimizado = textoOptimizado + "\n";
     }
 
     public boolean esTokenEstado(String palabra) {
         for (int i = 0; i < 3; i++) {
-            if (palabra == TOKEN_DE_ESTADO[i]) {
+            if (palabra.equals(TOKEN_DE_ESTADO[i])) {
                 return true;
             }
         }
@@ -103,8 +107,9 @@ public class AutomataAnalizador {
     }
 
     private void crearTokenEstado(String linea) {
+        String[] lineas = linea.split("\\n");
         String palabra = extraerPalabraEstado(linea);
-        int index = 0;
+        int index = palabra.length();
         int columna = 0;
         Token token = new Token();
 
@@ -116,7 +121,9 @@ public class AutomataAnalizador {
 
         tokens.add(token);
 
-        while (index < linea.length()) {
+        textoOptimizado = textoOptimizado + palabra + "\n";
+
+        while (index < lineas[0].length()) {
             if (linea.charAt(index) == ' ') {
                 index++;
             } else {
@@ -128,6 +135,7 @@ public class AutomataAnalizador {
     }
 
     private int crearTokenError(String linea, int columna, int index, String lenguaje) {
+        index--;
         String palabra = extraerPalabraErronea(linea, index);
 
         TokenError token = new TokenError();
@@ -146,14 +154,19 @@ public class AutomataAnalizador {
         linea = linea.trim();
 
         String palabra = "";
-        int index = 0;
+        int index = -1;
         char caracter;
 
-        do {
-            index++;
-            caracter = linea.charAt(index);
-            palabra = palabra + caracter;
-        } while (caracter == ' ');
+        try {
+            char car;
+            do {
+                index++;
+                caracter = linea.charAt(index);
+                palabra = palabra + caracter;
+                car = linea.charAt(index + 1);
+            } while (car != ' ' && car != '\n');
+        } catch (Exception e) {
+        }
 
         return palabra;
     }
@@ -192,5 +205,9 @@ public class AutomataAnalizador {
         tokenError.setColumna(token.getColumna());
 
         return tokenError;
+    }
+
+    public void ponerOptimizacion(JTextArea txa) {
+        txa.setText(textoOptimizado);
     }
 }

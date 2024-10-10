@@ -22,7 +22,6 @@ public class FramePrincipal extends JFrame {
     private final int SIZE_PANEL = SIZE - GAP * 2;
 
     private DialogSeleccionArchivo dialogSeleccionArchivo;
-    private DialogBorrarTexto dialogBorrarTexto;
 
     public FramePrincipal() {
 
@@ -65,6 +64,8 @@ public class FramePrincipal extends JFrame {
         btn1 = new JButton("Analizar Texto");
         btn2 = new JButton("Generar HTML");
 
+        btn1.addActionListener(new ActionListenerAnalizar(this));
+
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
 
@@ -102,31 +103,16 @@ public class FramePrincipal extends JFrame {
         dialogSeleccionArchivo.setVisible(true);
     }
 
-    public void preguntarBorrar(String texto) {
-        cerrarDialogs();
-        dialogBorrarTexto = new DialogBorrarTexto(this, texto);
-        dialogBorrarTexto.setVisible(true);
-    }
-
     public void cerrarDialogs() {
         if (dialogSeleccionArchivo != null) {
             dialogSeleccionArchivo.dispose();
         }
-        if (dialogBorrarTexto != null) {
-            dialogBorrarTexto.dispose();
-        }
     }
 
-    public void borrarTextArea(String texto, String opcion) {
+    public void borrarTextArea(String texto) {
         String textoTotal = null;
-        switch (opcion) {
-            case "Si":
-                textoTotal = texto;
-                break;
-            case "No":
-                textoTotal = txa.getText() + texto;
-                break;
-        }
+
+        textoTotal = texto;
 
         txa.setText(textoTotal);
         cerrarDialogs();

@@ -13,12 +13,20 @@ public class AnalizadorJS extends Analizador {
         TokenJS tokenJS = new TokenJS();
         String palabra = "";
 
-        index = 0;
+        index = -1;
 
         do {
 
-            if (tokenJS.esNumero(palabra.charAt(index))) {
+            while (linea.charAt(index + 1) == ' ') {
+                index++;
+            }
+
+            if (tokenJS.esNumero(linea.charAt(index + 1))) {
                 palabra = extraerNumero(linea, tokenJS);
+            } else if (tokenJS.esPrincipoCadena(linea.charAt(index + 1))) {
+                palabra = extraerCadena(linea, tokenJS);
+            } else if (linea.charAt(index + 1) == '/' && linea.charAt(index + 2) == '/') {
+                palabra = extraerComentario(linea);
             } else {
                 palabra = extraerPalabra(linea);
                 if (palabra.equals("console")) {
@@ -28,7 +36,7 @@ public class AnalizadorJS extends Analizador {
 
             extraerToken(palabra, tokenJS);
 
-        } while (index > linea.length() - 1);
+        } while (index < linea.length() - 1);
 
         return tokens;
     }
@@ -53,6 +61,23 @@ public class AnalizadorJS extends Analizador {
         return palabra;
     }
 
+    private String extraerCadena(String parte, TokenJS tokenJS) {
+        String palabra = "";
+        char caracter;
+
+        index++;
+        caracter = parte.charAt(index);
+        palabra = palabra + caracter;
+
+        do {
+            index++;
+            caracter = parte.charAt(index);
+            palabra = palabra + caracter;
+        } while (!tokenJS.esPrincipoCadena(parte.charAt(index)));
+
+        return palabra;
+    }
+
     private void extraerToken(String palabra, TokenJS tokenJS) {
         String[] traduccion = { palabra, palabra };
         if (tokenJS.esAritmerico(palabra)) {
@@ -71,14 +96,17 @@ public class AnalizadorJS extends Analizador {
             agregarToken(traduccion, "Otro", "JS");
         } else if (tokenJS.esIdentificador(palabra)) {
             agregarToken(traduccion, "Identificador", "JS");
-        } else {
+        } else if (palabra.charAt(0) == '/' && palabra.charAt(1) == '/') {
+            String[] comentario = { palabra, palabra };
+            agregarToken(comentario, "Comentario", "JS");
+    } else {
             agregarError(palabra, "JS");
         }
     }
 
     @Override
     protected boolean esFinalPalabra(char car, char carSig) {
-        return carSig == ' ' || carSig == '(' || carSig == ')' || carSig == ';' || carSig == '.' || carSig == ',';
+        return carSig != ' ' && carSig != '(' && carSig != ')' && carSig != ';' && carSig != '.' && carSig != ','
+                && car != '(' && car != ')' && car != '.' && carSig != 10;
     }
-
 }

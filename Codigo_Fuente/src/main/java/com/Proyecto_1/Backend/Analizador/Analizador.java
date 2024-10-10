@@ -27,13 +27,19 @@ public abstract class Analizador {
 
     protected String extraerPalabra(String parte) {
         String palabra = "";
-        char caracter;
+        char caracter, car1, car2;
 
         do {
             index++;
             caracter = parte.charAt(index);
             palabra = palabra + caracter;
-        } while (esFinalPalabra(parte.charAt(index), parte.charAt(index + 1)));
+            car1 = parte.charAt(index);
+            try {
+                car2 = parte.charAt(index + 1);
+            } catch (Exception e) {
+                car2 = 10;
+            }
+        } while (esFinalPalabra(car1, car2));
 
         return palabra;
     }
@@ -41,6 +47,20 @@ public abstract class Analizador {
     protected void agregarError(String palabra, String lenguaje) {
         String[] error = { palabra, palabra };
         agregarToken(error, "Error", lenguaje);
+    }
+
+    protected String extraerComentario(String linea) {
+        String palabra = "";
+        char caracter;
+        try {
+            do {
+                index++;
+                caracter = linea.charAt(index);
+                palabra = palabra + caracter;
+            } while (true);
+        } catch (IndexOutOfBoundsException e) {
+        }
+        return palabra;
     }
 
     protected abstract boolean esFinalPalabra(char car, char carSig);
