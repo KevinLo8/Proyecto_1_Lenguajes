@@ -1,11 +1,13 @@
 package com.Proyecto_1.Frontend;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 import javax.swing.*;
 
 import com.Proyecto_1.Backend.ActionListeners.*;
 import com.Proyecto_1.Backend.Automata.*;
+import com.Proyecto_1.Backend.Token.*;
 import com.Proyecto_1.Frontend.JDialog.*;
 
 public class FramePrincipal extends JFrame {
@@ -15,6 +17,7 @@ public class FramePrincipal extends JFrame {
     private JScrollPane scp1;
     private JTextArea txa;
     private JButton btn1, btn2;
+    private JMenuItem jMI3, jMI4, jMI5;
 
     private final Dimension DIM = Toolkit.getDefaultToolkit().getScreenSize();
     private final int SIZE = 800;
@@ -22,6 +25,9 @@ public class FramePrincipal extends JFrame {
     private final int SIZE_PANEL = SIZE - GAP * 2;
 
     private DialogSeleccionArchivo dialogSeleccionArchivo;
+    private DialogReporteTokens dialogReporteTokens;
+    private DialogReporteErrores dialogReporteErrores;
+    private DialogReporteOptimizacion dialogReporteOptimizacion;
 
     public FramePrincipal() {
 
@@ -45,12 +51,25 @@ public class FramePrincipal extends JFrame {
 
         JMenuItem jMI1 = new JMenuItem("Cargar Archivo");
         JMenuItem jMI2 = new JMenuItem("Salir");
+        jMI3 = new JMenuItem("Reporte De Tokens");
+        jMI4 = new JMenuItem("Reporte De Errores");
+        jMI5 = new JMenuItem("Reporte De Optimización");
+
+        jMI3.setEnabled(false);
+        jMI4.setEnabled(false);
+        jMI5.setEnabled(false);
 
         jM1.add(jMI1);
         jM1.add(jMI2);
+        jM2.add(jMI3);
+        jM2.add(jMI4);
+        jM2.add(jMI5);
 
         jMI1.addActionListener(new ActionListenerArchivo(this));
         jMI2.addActionListener(new ActionListenerSalir());
+        jMI3.addActionListener(new ActionListenerReporteTokens(this));
+        jMI4.addActionListener(new ActionListenerReporteErrores(this));
+        jMI5.addActionListener(new ActionListenerReporteOptimizacion(this));
 
         setJMenuBar(jMenuBar);
 
@@ -107,6 +126,15 @@ public class FramePrincipal extends JFrame {
         if (dialogSeleccionArchivo != null) {
             dialogSeleccionArchivo.dispose();
         }
+        if (dialogReporteTokens != null) {
+            dialogReporteTokens.dispose();
+        }
+        if (dialogReporteErrores != null) {
+            dialogReporteErrores.dispose();
+        }
+        if (dialogReporteOptimizacion != null) {
+            dialogReporteOptimizacion.dispose();
+        }
     }
 
     public void borrarTextArea(String texto) {
@@ -121,6 +149,39 @@ public class FramePrincipal extends JFrame {
     public void analizarTexto() {
         automata = new Automata();
         automata.analizarTexto(txa);
+
+        jMI3.setEnabled(true);
+        jMI4.setEnabled(true);
+        jMI5.setEnabled(true);
     }
 
+    public ArrayList<Token> pedirTokens() {
+        return automata.getTokens();
+    }
+
+    public ArrayList<TokenError> pedirErrores() {
+        return automata.getErrores();
+    }
+
+    public ArrayList<Token> pedirOptimizacion() {
+        return automata.getOptimizacion();
+    }
+
+    public void mostrarReporteTokens() {
+        cerrarDialogs();
+        dialogReporteTokens = new DialogReporteTokens(this);
+        dialogReporteTokens.setVisible(true);
+    }
+
+    public void mostrarReporteErrores() {
+        cerrarDialogs();
+        dialogReporteErrores = new DialogReporteErrores(this);
+        dialogReporteErrores.setVisible(true);
+    }
+
+    public void mostrarReporteOptimizacion() {
+        cerrarDialogs();
+        dialogReporteOptimizacion = new DialogReporteOptimizacion(this);
+        dialogReporteOptimizacion.setVisible(true);
+    }
 }

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 
 import javax.swing.*;
 
+import com.Proyecto_1.Backend.Token.Token;
+import com.Proyecto_1.Backend.Token.TokenError;
+
 public class Automata {
 
     private ArrayList<String> parrafos;
@@ -45,6 +48,11 @@ public class Automata {
             }
             index++;
         }
+
+        if (parrafo.length() > 0) {
+            parrafos.add(parrafo);
+            agregarTipo(parrafo);
+        }
     }
 
     private void agregarTipo(String parrafo) {
@@ -72,6 +80,18 @@ public class Automata {
         }
 
         analizador.ponerOptimizacion(txa);
+    }
+
+    public ArrayList<Token> getTokens() {
+        return analizador.getTokens();
+    }
+
+    public ArrayList<TokenError> getErrores() {
+        return analizador.getErrores();
+    }
+
+    public ArrayList<Token> getOptimizacion() {
+        return analizador.getOptimizacion();
     }
 
 }

@@ -95,6 +95,7 @@ public class AutomataAnalizador {
         }
 
         textoOptimizado = textoOptimizado + "\n";
+        numeroLinea++;
     }
 
     public boolean esTokenEstado(String palabra) {
